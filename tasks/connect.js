@@ -57,6 +57,7 @@ module.exports = function(grunt, config) {
 		// Merge task-specific and/or target-specific options with these defaults.
 		var options = this.options({
 			contextpath: '/',
+			resContext: 'resources/',
 			appresources: [],
 			resources: [],
 			testresources: [],
@@ -90,17 +91,26 @@ module.exports = function(grunt, config) {
 			var app = connect();
 
 			// adds the middleware (with optional context url)
-			function mountMiddleware(middleware, context) {
+			function mountMiddleware(middleware, context, bUseContext) {
 				if (typeof context === 'string') {
-					middleware = app.use(urljoin('/', options.contextpath, context), middleware);
+					if (bUseContext !== false) {
+						middleware = app.use(urljoin('/', options.contextpath, context), middleware);
+					} else {
+						middleware = app.use(urljoin('/', '/', context), middleware);
+					}
 				}
 				middlewares.push(middleware);
 			}
 
 			// returns a function that mounts the static middleware using the provided path
-			function mountStatic(context) {
+			function mountStatic(context, bUseContext) {
+
 				return function(staticPath) {
-					mountMiddleware(connect.static(staticPath, { dotfiles: 'allow' }), context);
+					mountMiddleware(
+						connect.static(staticPath, { dotfiles: 'allow' }),
+						context,
+						bUseContext
+					);
 				};
 			}
 
@@ -133,7 +143,7 @@ module.exports = function(grunt, config) {
 
 			// mount all static paths
 			options.appresources.forEach(mountStatic('/'));
-			options.resources.forEach(mountStatic('/resources'));
+			options.resources.forEach(mountStatic(options.resContext, false));
 			options.testresources.forEach(mountStatic('/test-resources'));
 
 			// compile themes on-the-fly using openui5 less middleware

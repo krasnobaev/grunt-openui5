@@ -61,15 +61,16 @@ Options for the [less](http://lesscss.org) compiler (`tree.toCss`).
 ```js
 grunt.initConfig({
   openui5_theme: {
-    options: {},
-    files: [
-      {
-        expand: true,
-        cwd: 'lib1',
-        src: 'my/ui/lib/themes/foo/library.source.less',
-        dest: 'tmp'
-      }
-    ]
+    library: {
+      files: [
+        {
+          expand: true,
+          cwd: 'lib1',
+          src: 'my/ui/lib/themes/foo/library.source.less',
+          dest: 'tmp'
+        }
+      ]
+    }
   },
 });
 ```
@@ -96,14 +97,16 @@ grunt.initConfig({
         compress: true
       }
     },
-    files: [
-      {
-        expand: true,
-        cwd: 'lib2',
-        src: 'my/ui/lib/themes/bar/library.source.less',
-        dest: 'tmp'
-      }
-    ]
+    library: {
+      files: [
+        {
+          expand: true,
+          cwd: 'lib2',
+          src: 'my/ui/lib/themes/bar/library.source.less',
+          dest: 'tmp'
+        }
+      ]
+    }
   },
 });
 ```
@@ -165,6 +168,15 @@ Default:
 
 Glob pattern(s) for finding relevant resources inside `cwd`. If set, the default patterns will be replaced.
 
+##### compatVersion
+Type: `string`  
+Default: `edge`
+
+Sets the UI5 version used for compatibility mode in the format `<major>.<minor>`. Use this when building older UI5 releases to ensure full functionality.
+
+Example:  
+When building for UI5 target version 1.38.x, use `compatVersion: '1.38'`.
+
 #### dest
 Type: `string`  
 Default value: `.`
@@ -172,13 +184,30 @@ Default value: `.`
 Path to the dest folder in which the preload files should be created.
 
 #### compress
-Type: `boolean`  
+Type: `boolean` or `object`  
 Default value: `true`
 
-Optional parameter to set compression/minification of the files.
-- Javascript is minified using [UglifyJS2](https://github.com/mishoo/UglifyJS2) and copyright comments are preserved (comments matching regular expression `/copyright|\(c\)|released under|license|\u00a9/i` )
+Optional parameter to set compression/minification of the files or to provide
+additional options.
+
+- JavaScript is minified using [UglifyJS2](https://github.com/mishoo/UglifyJS2)
 - XML is minified using [pretty-data](https://github.com/vkiryukhin/pretty-data)
 - JSON is parsed for correctness and to remove extra whitespace
+
+An `object` can be used to provide options.  
+Currrently only `uglifyjs` is supported.  
+The given object will be passed to `UglifyJS2.minify` (see [here](https://github.com/mishoo/UglifyJS2#api-reference) for  options) and merged with the defaults (see below).  
+
+```js
+compress: {
+  uglifyjs: {
+    output: {
+      comments: /copyright|\(c\)|released under|license|\u00a9/i
+    }
+  }
+}
+```
+Note that `fromString` and `warnings` will be always overridden.
 
 #### components
 
@@ -378,6 +407,13 @@ Type: `object`
 
 Options for [connect-openui5 proxy](https://github.com/SAP/connect-openui5#proxyoptions).
 
+#### lessOptions
+
+Type: `object`
+
+Options for [connect-openui5 less](https://github.com/SAP/connect-openui5#lessoptions).
+
+
 ### Usage Examples
 
 #### App
@@ -446,4 +482,4 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Lisense
 
-[Apache License 2.0](http: //www.apache.org/licenses/LICENSE-2.0) © 2015 [SAP SE](http://www.sap.com)
+[Apache License 2.0](http: //www.apache.org/licenses/LICENSE-2.0) © 2016 [SAP SE](http://www.sap.com)

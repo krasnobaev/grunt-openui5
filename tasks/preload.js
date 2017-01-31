@@ -1,4 +1,4 @@
-// Copyright 2015 SAP SE.
+// Copyright 2016 SAP SE.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ module.exports = function (grunt) {
 		var options = this.options({
 			resources: [],
 			dest: null,
-			compress: true
+			compress: true,
+			compatVersion: "edge"
 		});
 
 		var resourceMap = {};
@@ -109,28 +110,54 @@ module.exports = function (grunt) {
 		}
 
 		['components', 'libraries'].forEach(function(preloadType) {
+			var iMajor, iMinor, preloadInfo, preloadOptions;
 
-			var preloadOptions = preloadData[preloadType];
-
+			preloadOptions = preloadData[preloadType];
 			if (!preloadOptions) {
 				return;
 			}
 
-			var preloadInfo = (preloadType === 'libraries') ? {
-				moduleName: 'library-preload',
-				ext: '.json',
-				indicatorFile: 'library.js',
-				processModuleName: function(moduleName) {
-					return moduleName.replace(/\//g, '.');
+			if (preloadType === 'libraries') {
+				preloadInfo = {
+					moduleName: 'library-preload',
+					indicatorFile: 'library.js',
+					processModuleName: function(moduleName) {
+						return moduleName.replace(/\//g, '.');
+					}
+				};
+
+				if (options.compatVersion !== "edge") {
+					var aVersionMatch = options.compatVersion.match(/^([0-9]+)\.([0-9]+)$/);
+					if (!aVersionMatch) {
+						grunt.fail.warn('\'' + options.compatVersion + '\' is not a valid value for option compatVersion!');
+						return;
+					}
+					iMajor = parseInt(aVersionMatch[1], 10);
+					iMinor = parseInt(aVersionMatch[2], 10);
 				}
-			} : {
-				moduleName: 'Component-preload',
-				ext: '.js',
-				indicatorFile: 'Component.js',
-				processContent: function(content) {
-					return 'jQuery.sap.registerPreloadedModules(' + content + ');';
+
+				if (options.compatVersion === "edge" || (iMajor === 1 && iMinor >= 40) || iMajor > 1) {
+					// Build library-preload as .js file
+					preloadInfo.ext = ".js";
+					preloadInfo.processContent = function(content) {
+						return 'jQuery.sap.registerPreloadedModules(' + content + ');';
+					};
+				} else {
+					// Build as .json file (legacy, needed because UI5 <1.40 only loads the .json files)
+					preloadInfo.ext = ".json";
 				}
-			};
+			} else {
+				preloadInfo = {
+					moduleName: 'Component-preload',
+					ext: '.js',
+					indicatorFile: 'Component.js',
+					processContent: function(content) {
+						return 'jQuery.sap.registerPreloadedModules(' + content + ');';
+					}
+				};
+			}
+
+
 
 			if (preloadOptions === true) {
 				preloadOptions = '**';
@@ -176,7 +203,15 @@ module.exports = function (grunt) {
 						preloadObject.name = preloadModuleName;
 					}
 
-					var preloadPatterns = preloadOption.src ? preloadOption.src : (preloadDir + '/**');
+					var preloadPatterns = preloadOption.src ? preloadOption.src : [ preloadDir + '/**' ];
+					if (typeof preloadPatterns === "string") {
+						preloadPatterns = [ preloadPatterns ];
+					}
+
+					// Always exclude the corresponding preload file (Component-preload.js / library-preload.json)
+					// Otherwise it might get included every time the build runs if src / dest are the same dir
+					preloadPatterns.push('!' + preloadDir + '/' + preloadInfo.moduleName + preloadInfo.ext);
+
 					var preloadFiles = grunt.file.match(preloadPatterns, resourceFiles);
 					if (preloadFiles.length === 0) {
 						var patternsString = (typeof preloadPatterns === 'string') ? preloadPatterns : preloadPatterns.join('", "');
@@ -191,7 +226,7 @@ module.exports = function (grunt) {
 						var fileName = resourceMap[preloadFile].fullPath;
 						var fileContent = grunt.file.read(fileName);
 						var fileExtension = path.extname(fileName);
-						
+
 						var iOriginalSize, iCompressedSize;
 
 						if (options.compress) {
@@ -199,30 +234,47 @@ module.exports = function (grunt) {
 							iOriginalSize = fileContent.length;
 							iPreloadOriginalSize += iOriginalSize;
 
-							switch (fileExtension) {
-							case '.js':
-								// Javascript files are processed by Uglify
-								fileContent = uglify.minify(fileContent, {
-									fromString: true,
-									warnings: grunt.option('verbose') === true,
-									output: {
-										comments: copyrightCommentsPattern
+							// Convert default compression to empty configuration object
+							if (options.compress === true) {
+							  options.compress = {};
+							}
+
+							// Make sure to have an object
+							options.compress.uglifyjs = options.compress.uglifyjs || {};
+
+							// Always override given options, override shouldn't be possible
+							options.compress.uglifyjs.fromString = true;
+							options.compress.uglifyjs.warnings = grunt.option('verbose') === true;
+
+							// Set default "comments" option if not given already
+							options.compress.uglifyjs.output = options.compress.uglifyjs.output || {};
+							if (!options.compress.uglifyjs.output.hasOwnProperty("comments")) {
+							  options.compress.uglifyjs.output.comments = copyrightCommentsPattern;
+							}
+
+							try {
+								switch (fileExtension) {
+								case '.js':
+									// Javascript files are processed by Uglify
+									fileContent = uglify.minify(fileContent, options.compress.uglifyjs).code;
+									break;
+								case '.json':
+									// JSON is parsed and written to string again to remove unwanted white space
+									fileContent = JSON.stringify(JSON.parse(fileContent));
+									break;
+								case '.xml':
+									// For XML we use the pretty data
+
+									// Do not minify if XML(View) contains an <*:pre> tag because whitespace of HTML <pre> should be preserved (should only happen rarely)
+									if (!xmlHtmlPrePattern.test(fileContent)) {
+										fileContent = pd.xmlmin(fileContent, false);
 									}
-								}).code;
-								break;
-							case '.json':
-								// JSON is parsed and written to string again to remove unwanted white space
-								fileContent = JSON.stringify(JSON.parse(fileContent));
-								break;
-							case '.xml':
-								// For XML we use the pretty data
 
-								// Do not minify if XML(View) contains an <*:pre> tag because whitespace of HTML <pre> should be preserved (should only happen rarely)
-								if (!xmlHtmlPrePattern.test(fileContent)) {
-									fileContent = pd.xmlmin(fileContent, false);
+									break;
 								}
-
-								break;
+							} catch (e) {
+								grunt.log.error('Failed to compress ' + fileName + '. This might be due to a syntax error in the file.');
+								grunt.fail.warn(e);
 							}
 
 							iCompressedSize = fileContent.length;

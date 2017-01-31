@@ -1,4 +1,4 @@
-// Copyright 2015 SAP SE.
+// Copyright 2016 SAP SE.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,11 @@ module.exports = function(grunt) {
 
 		// Before generating any new files, remove any previously-created files.
 		clean: {
-			tests: ['tmp']
+			tests: [
+				'tmp',
+				'test/preload/fixtures/app-same-dest/my/app/Component-preload.js',
+				'test/preload/fixtures/library-same-dest/my/ui/lib/library-preload.json'
+			]
 		},
 
 		// Configuration to be run (and then tested).
@@ -111,10 +115,46 @@ module.exports = function(grunt) {
 				components: '**'
 			},
 
+			// The following two targets are testing that a generated preload file
+			// doesn't get included when runnign the preload again
+			// (same folder for src and dest)
+			'component_same_dest_1': {
+				options: {
+					resources: 'test/preload/fixtures/app-same-dest',
+					dest: 'test/preload/fixtures/app-same-dest'
+				},
+				components: '**'
+			},
+			'component_same_dest_2': {
+				options: {
+					resources: 'test/preload/fixtures/app-same-dest',
+					dest: 'test/preload/fixtures/app-same-dest'
+				},
+				components: '**'
+			},
+
 			'library_default_options': {
 				options: {
 					resources: 'test/preload/fixtures/library',
 					dest: 'tmp/preload/library_default_options'
+				},
+				libraries: '**'
+			},
+
+			'library_compat_138': {
+				options: {
+					resources: 'test/preload/fixtures/library',
+					dest: 'tmp/preload/library_compat_138',
+					compatVersion: '1.38'
+				},
+				libraries: '**'
+			},
+
+			'library_compat_140': {
+				options: {
+					resources: 'test/preload/fixtures/library',
+					dest: 'tmp/preload/library_compat_140',
+					compatVersion: '1.40'
 				},
 				libraries: '**'
 			},
@@ -137,6 +177,74 @@ module.exports = function(grunt) {
 					resources: 'test/preload/fixtures/library',
 					dest: 'tmp/preload/library_no_compress',
 					compress: false
+				},
+				libraries: '**'
+			},
+
+			// The following two targets are testing that a generated preload file
+			// doesn't get included when runnign the preload again
+			// (same folder for src and dest)
+			'library_same_dest_1': {
+				options: {
+					resources: [
+						{
+							cwd: 'test/preload/fixtures/library-same-dest',
+							src: [
+								// Defaults
+								'**/*.js',
+								'**/*.fragment.html',
+								'**/*.fragment.json',
+								'**/*.fragment.xml',
+								'**/*.view.html',
+								'**/*.view.json',
+								'**/*.view.xml',
+								'**/*.properties',
+								// Include "library-preload.json" for this test
+								'**/library-preload.json'
+							]
+						}
+					],
+					dest: 'test/preload/fixtures/library-same-dest'
+				},
+				libraries: '**'
+			},
+			'library_same_dest_2': {
+				options: {
+					resources: [
+						{
+							cwd: 'test/preload/fixtures/library-same-dest',
+							src: [
+								// Defaults
+								'**/*.js',
+								'**/*.fragment.html',
+								'**/*.fragment.json',
+								'**/*.fragment.xml',
+								'**/*.view.html',
+								'**/*.view.json',
+								'**/*.view.xml',
+								'**/*.properties',
+								// Include "library-preload.json" for this test
+								'**/library-preload.json'
+							]
+						}
+					],
+					dest: 'test/preload/fixtures/library-same-dest'
+				},
+				libraries: '**'
+			},
+
+			'library_custom_uglify_params': {
+				options: {
+					resources: 'test/preload/fixtures/library-custom-uglify-params',
+					dest: 'tmp/preload/library_custom_uglify_params',
+					compress: {
+						uglifyjs: {
+							mangle: false,
+							output: {
+								ascii_only: true
+							}
+						}
+					}
 				},
 				libraries: '**'
 			}

@@ -1,3 +1,82 @@
+# 0.11.0 (2016-12-01)
+
+### Breaking changes
+- Drop Node.js v0.10 support [`e99df21`](https://github.com/SAP/grunt-openui5/commit/e99df2129ec40960af70589a893af6732ba05295)
+- openui5_preload task
+  - Create library-preload.js files instead of .json [#47](https://github.com/SAP/grunt-openui5/pull/47) [`cb9bcae`](https://github.com/SAP/grunt-openui5/commit/cb9bcaef6cf8c8cef39f109f1cbb9bae21356e0a)
+
+### Features
+- openui5_preload task
+  - Introduce [`compatVersion` option](https://github.com/SAP/grunt-openui5#compatversion) [#47](https://github.com/SAP/grunt-openui5/pull/47) [`cb9bcae`](https://github.com/SAP/grunt-openui5/commit/cb9bcaef6cf8c8cef39f109f1cbb9bae21356e0a)
+
+### Others
+- Update npm dependencies / replace "url-join" with "urljoin" [#49](https://github.com/SAP/grunt-openui5/pull/49) [`b820a68`](https://github.com/SAP/grunt-openui5/commit/b820a6830cb7505374a10e86816263860f9a52c5)
+- Travis CI: Add node v7 / drop v0.10 [`f691e1a`](https://github.com/SAP/grunt-openui5/commit/f691e1a314d9b4d1ff6e540012562639e749276f)
+
+### All changes
+[`0.10.0...0.11.0`](https://github.com/SAP/grunt-openui5/compare/0.10.0...0.11.0)
+
+# 0.10.0 (2016-09-09)
+
+### Features
+- openui5_preload task
+  - Compression options for UglifyJS [#41](https://github.com/SAP/grunt-openui5/pull/41) [`b2e6c0e`](https://github.com/SAP/grunt-openui5/commit/b2e6c0e87f94d1fc46b8fafa69bd40e8d2ffe88f)
+
+### Fixes
+- openui5_preload task
+  - Fail gracefully when minification fails [#42](https://github.com/SAP/grunt-openui5/pull/42) [`52b6c78`](https://github.com/SAP/grunt-openui5/commit/52b6c78d21eec1d90987838d3e7726d19baa8fca)
+
+### Others
+- Documentation: openui5_theme default example [#33](https://github.com/SAP/grunt-openui5/pull/33) [`8ef82a5`](https://github.com/SAP/grunt-openui5/commit/8ef82a510aed7159c81433d1896fbe7073535426)
+
+### All changes
+[`0.9.0...0.10.0`](https://github.com/SAP/grunt-openui5/compare/0.9.0...0.10.0)
+
+
+# 0.9.0 (2016-04-25)
+
+### Breaking changes
+- openui5_connect / openui5_theme tasks
+  - Set default of parser option `relativeUrls` to `true` [`4d5fca2 ` via less-openui5@0.2.0](https://github.com/SAP/connect-openui5/commit/4d5fca25954049eec4af53c8bd12c54d6ad020aa) (see [`7cc2781 `](https://github.com/SAP/grunt-openui5/commit/7cc2781bfb63c95deef2a63a426d791f02a8770b))
+
+### Features
+- openui5_connect task
+  - support `lessOptions` [`a8c1280`](https://github.com/SAP/grunt-openui5/commit/a8c1280f09a0dc20fd4987600572a8f34e5d9dc4)
+
+### Fixes
+- openui5_preload task
+  - Always exclude corresponding preload files [`a9ebf40`](https://github.com/SAP/grunt-openui5/commit/a9ebf407bd4700136b0d7277cdac53d2c6366bb7)
+
+### Others
+- Support Grunt 1.0 [`046e8ca`](https://github.com/SAP/grunt-openui5/commit/046e8ca5c2ab0954c679712a2b3259c8e2a918dc)
+- Update dependencies [`7cc2781`](https://github.com/SAP/grunt-openui5/commit/7cc2781bfb63c95deef2a63a426d791f02a8770b)
+
+### All changes
+[`0.8.1...0.9.0`](https://github.com/SAP/grunt-openui5/compare/0.8.1...0.9.0)
+
+
+# 0.8.1 (2016-01-20)
+
+### Others
+- Update dependencies [`4524b2f`](https://github.com/SAP/grunt-openui5/commit/4524b2ffd4b58b5bde777ed4268f013db30ef610) [`70e2c92`](https://github.com/SAP/grunt-openui5/commit/70e2c9286ec26a5a02f7204747abc89f6cf8020a)
+
+### All changes
+[`0.8.0...0.8.1`](https://github.com/SAP/grunt-openui5/compare/0.8.0...0.8.1)
+
+
+# 0.8.0 (2015-08-17)
+
+### Fixes
+- openui5_connect task
+  - support [connect](https://github.com/gruntjs/grunt-contrib-connect) v3 [`b3c9da9`](https://github.com/SAP/grunt-openui5/commit/b3c9da93cd9984ba6bbc391bbdc7745379fa0019)
+
+### Others
+- bump dependencies [`b3c9da9`](https://github.com/SAP/grunt-openui5/commit/b3c9da93cd9984ba6bbc391bbdc7745379fa0019)
+
+### All changes
+[`0.7.0...0.8.0`](https://github.com/SAP/grunt-openui5/compare/0.7.0...0.8.0)
+
+
 # 0.7.0 (2015-03-16)
 
 ### Features

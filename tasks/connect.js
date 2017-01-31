@@ -1,4 +1,4 @@
-// Copyright 2015 SAP SE.
+// Copyright 2016 SAP SE.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 var openui5 = {
 	connect: require('connect-openui5')
 };
+var serveStatic = require('serve-static');
 var inject = require('connect-inject');
 var cors = require('cors');
-var urljoin = require('url-join');
+var urljoin = require('urljoin');
 var multiline = require('multiline');
 
 var liveReloadLessCssPlugin = multiline(function() {/*
@@ -63,7 +64,8 @@ module.exports = function(grunt, config) {
 			testresources: [],
 			cors: null,
 			proxypath: null,
-			proxyOptions: null
+			proxyOptions: null,
+			lessOptions: null
 		});
 
 		// normalize strings to arrays for "resources" options
@@ -147,9 +149,9 @@ module.exports = function(grunt, config) {
 			options.testresources.forEach(mountStatic('/test-resources'));
 
 			// compile themes on-the-fly using openui5 less middleware
-			mountMiddleware(openui5.connect.less({
-				rootPaths: options.resources
-			}), '/resources');
+			options.lessOptions = options.lessOptions || {};
+			options.lessOptions.rootPaths = options.resources;
+			mountMiddleware(openui5.connect.less(options.lessOptions), '/resources');
 
 			// mount a generic proxy
 			if (options.proxypath) {
